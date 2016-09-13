@@ -1,6 +1,7 @@
+import java.io.Serializable;
 import java.util.Date;
 
-public class CrimeInfo {
+public class CrimeInfo implements Serializable {
 
 	private String crimeDate;
 	private String crimeAddress;

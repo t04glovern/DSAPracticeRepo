@@ -1,14 +1,11 @@
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.StringTokenizer;
 
 public class FileReadWrite {
 
 	public static void main(String[] args)
 	{
-		//DSAStack stack = new DSAStack(8000);
+		DSAStack stack = new DSAStack(8000);
 		DSAQueue queue = new DSAQueue(8000);
 		FileReadWrite fileReadWrite = new FileReadWrite();
 
@@ -27,17 +24,25 @@ public class FileReadWrite {
 			while(line != null)
 			{
 				queue.enqueue(ProcessLine(line));
-				//stack.push(ProcessLine(line));
+				stack.push(ProcessLine(line));
 				line = buffer.readLine();
 			}
+
+			inputStream.close();
 		}
 		catch (IOException e)
 		{
 			System.out.println("IOFailed");
 		}
 
-		printCrimeInfoQueue(queue);
+		//printCrimeInfoQueue(queue);
 		//printCrimeInfoStack(stack);
+
+		//saveRecordsToFileFromDataStructure(stack);
+		saveRecordsToFileFromDataStructure(queue);
+
+		CrimeInfo loadedCrime = loadCrimeFromFile("2302");
+		System.out.println(loadedCrime.getCrimeID() + " at address " + loadedCrime.getCrimeAddress());
 	}
 
 	public static CrimeInfo ProcessLine(String inLine)
@@ -87,6 +92,69 @@ public class FileReadWrite {
 		{
 			CrimeInfo crime = (CrimeInfo)inQueue.dequeue();
 			System.out.println("crime ID: " + crime.getCrimeID() + " took place at " + crime.getCrimeAddress());
+		}
+	}
+
+	public static void saveRecordToFile(CrimeInfo inCrime)
+	{
+		FileOutputStream fileOut;
+		ObjectOutputStream objectOutput;
+
+		try
+		{
+			fileOut = new FileOutputStream("filedump/crimes/"+inCrime.getCrimeID());
+			objectOutput = new ObjectOutputStream(fileOut);
+
+			objectOutput.writeObject(inCrime);
+			fileOut.close();
+		}
+		catch (IOException e)
+		{
+			System.out.println("Disk IO error");
+		}
+	}
+
+	public static CrimeInfo loadCrimeFromFile(String crimeID)
+	{
+		CrimeInfo crime = null;
+
+		FileInputStream fileIn;
+		ObjectInputStream objectIn;
+
+		try
+		{
+			fileIn = new FileInputStream("filedump/crimes/"+crimeID);
+			objectIn = new ObjectInputStream(fileIn);
+
+			crime = (CrimeInfo)objectIn.readObject();
+			fileIn.close();
+		}
+		catch (IOException e)
+		{
+			System.out.println("Disk IO error or File not found");
+		}
+		catch (ClassNotFoundException e)
+		{
+			System.out.println("Object class not found");
+		}
+		return crime;
+	}
+
+	public static void saveRecordsToFileFromDataStructure(Object inDataStructure)
+	{
+		if(inDataStructure instanceof DSAQueue)
+		{
+			while(!((DSAQueue) inDataStructure).isEmpty())
+			{
+				saveRecordToFile((CrimeInfo)(((DSAQueue) inDataStructure).dequeue()));
+			}
+		}
+		if(inDataStructure instanceof DSAStack)
+		{
+			while(!((DSAStack) inDataStructure).isEmpty())
+			{
+				saveRecordToFile((CrimeInfo)((DSAStack) inDataStructure).pop());
+			}
 		}
 	}
 }
